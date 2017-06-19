@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Kitchen_Pantry</string>
+    <string name="Home">Home</string>
+    <string name="Recipe">Recipe</string>
+    <string name="Ingredients">Ingredients</string>
+    <string name="Settings">Settings</string>
 </resources>
