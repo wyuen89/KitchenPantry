@@ -3,10 +3,17 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <SearchView
+        android:id="@+id/item_search"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:iconifiedByDefault="false" />
+
+    <ListView
+        android:id="@+id/ingredient_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="Ingredient Fragment"/>
+        android:text="Ingredient Fragment" />
 
 </LinearLayout>
