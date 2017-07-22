@@ -2,6 +2,7 @@ package wyuen.kitchen_pantry;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,7 +31,7 @@ public class RecipeFragment extends Fragment {
 
         db = new KPDatabase(DbHelper.getInstance(this.getContext()).getWritableDatabase());
         adapter = new KPAdapter(this.getContext(), db.selectAllRecipes());
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
     }
 
     @Override
@@ -38,8 +39,28 @@ public class RecipeFragment extends Fragment {
         Log.d("IngredientFragment", "OnCreateView called");
 
         View view = inflater.inflate(R.layout.recipe_fragment, container, false);
+        Toolbar tb = (Toolbar)view.findViewById(R.id.recipe_toolbar);
         ListView lv = (ListView)view.findViewById(R.id.recipe_list);
         SearchView sv = (SearchView)view.findViewById(R.id.recipe_search);
+
+        tb.inflateMenu(R.menu.toolbar_menu);
+
+        Button addButton = (Button)view.findViewById(R.id.add_button);
+        Button filterButton = (Button)view.findViewById(R.id.filter_button);
+
+        addButton.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                Log.d("RecipeFragment", "Add Button Pressed");
+            }
+        });
+
+        filterButton.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                Log.d("RecipeFragment", "Filter Button Pressed");
+            }
+        });
 
         lv.setAdapter(adapter);
 
@@ -66,32 +87,5 @@ public class RecipeFragment extends Fragment {
         });
 
         return view;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
-        Log.d("RecipeFragment", "OnCreateOptionsMenu called");
-        inflater.inflate(R.menu.toolbar_menu, menu);
-
-        MenuItem item = menu.findItem(R.id.action_bar);
-        View view = item.getActionView();
-
-        Button addButton = (Button)view.findViewById(R.id.add_button);
-        Button filterButton = (Button)view.findViewById(R.id.filter_button);
-
-        addButton.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                Log.d("RecipeFragment", "Add Button Pressed");
-            }
-        });
-
-
-        filterButton.setOnClickListener(new Button.OnClickListener(){
-            @Override
-            public void onClick(View view) {
-                Log.d("RecipeFragment", "Filter Button Pressed");
-            }
-        });
     }
 }
