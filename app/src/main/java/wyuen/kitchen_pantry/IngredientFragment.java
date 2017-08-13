@@ -1,13 +1,11 @@
 package wyuen.kitchen_pantry;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,9 +26,9 @@ public class IngredientFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d("IngredientFragment", "onCreate called");
 
-        db = new KPDatabase(DbHelper.getInstance(this.getContext()).getWritableDatabase());
-        adapter = new KPAdapter(this.getContext(), db.selectAllIngredients());
-        //setHasOptionsMenu(true);
+        db = new KPDatabase(getActivity().getBaseContext(), DbHelper.getInstance(this.getContext()).getWritableDatabase());
+        //@TODO: put in filtered results for parameter
+        adapter = new KPAdapter(this.getContext(), db.getFilteredIngredients());
     }
 
     @Override
@@ -42,6 +40,8 @@ public class IngredientFragment extends Fragment {
         ListView lv = (ListView)view.findViewById(R.id.ingredient_list);
         SearchView sv = (SearchView)view.findViewById(R.id.item_search);
 
+
+
         tb.inflateMenu(R.menu.toolbar_menu);
 
         Button addButton = (Button)view.findViewById(R.id.add_button);
@@ -51,6 +51,8 @@ public class IngredientFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("IngredientFragment", "Add Button Pressed");
+                Intent intent = new Intent(getContext(), AddIngredientActivity.class);
+                startActivityForResult(intent, 1);
             }
         });
 
@@ -59,6 +61,8 @@ public class IngredientFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("IngredientFragment", "Filter Button Pressed");
+                Intent intent = new Intent(getContext(), FilterIngredientActivity.class);
+                startActivityForResult(intent, 2);
             }
         });
 
@@ -87,5 +91,12 @@ public class IngredientFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("IngredientFragment", "activity returned");
+        //@TODO: call update only when result is successful
+        adapter.update(db.getFilteredIngredients());
     }
 }

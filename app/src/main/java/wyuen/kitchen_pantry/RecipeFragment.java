@@ -5,9 +5,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -29,14 +26,13 @@ public class RecipeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d("RecipeFragment", "onCreate called");
 
-        db = new KPDatabase(DbHelper.getInstance(this.getContext()).getWritableDatabase());
-        adapter = new KPAdapter(this.getContext(), db.selectAllRecipes());
-        //setHasOptionsMenu(true);
+        db = new KPDatabase(getActivity().getBaseContext(), DbHelper.getInstance(this.getContext()).getWritableDatabase());
+        adapter = new KPAdapter(this.getContext(), db.getAllRecipes());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        Log.d("IngredientFragment", "OnCreateView called");
+        Log.d("RecipeFragment", "OnCreateView called");
 
         View view = inflater.inflate(R.layout.recipe_fragment, container, false);
         Toolbar tb = (Toolbar)view.findViewById(R.id.recipe_toolbar);

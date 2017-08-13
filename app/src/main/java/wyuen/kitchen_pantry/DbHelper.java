@@ -15,15 +15,6 @@ public class DbHelper extends SQLiteOpenHelper {
     private Context context;
     private static DbHelper instance = null;
 
-    public static final String TABLE_RECIPE = "Recipe";
-    public static final String TABLE_INGREDIENTS = "Ingredients";
-    public static final String TABLE_REC_INGREDIENTS = "RecIngredients";
-    public static final String TABLE_INSTRUCTIONS = "Instructions";
-
-    public static final String COLUMN_INGREDIENTID= "IngredientID";
-    public static final String COLUMN_RECIPEID= "RecID";
-    public static final String COLUMN_NAME = "Name";
-
     private DbHelper(Context context){
         super(context, DB_NAME, null, VERSION);
         this.context = context;
@@ -33,8 +24,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
         if (instance == null) {
             instance = new DbHelper(context.getApplicationContext());
+            Log.d("DbHelper", "instance initialized");
         }
-
 
         return instance;
     }

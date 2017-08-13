@@ -22,7 +22,9 @@ public class KPAdapter extends BaseAdapter implements Filterable {
 
     private List<ItemInfo> original;
     private List<ItemInfo> idList;
+    private CharSequence savedQuery;
     LayoutInflater inflater;
+    Context context;
 
     private class ViewHolder{
         TextView view;
@@ -31,6 +33,7 @@ public class KPAdapter extends BaseAdapter implements Filterable {
     public KPAdapter(Context context, List<ItemInfo> inList){
         idList = inList;
         original = inList;
+        this.context = context;
         inflater = LayoutInflater.from(context);
     }
 
@@ -70,11 +73,28 @@ public class KPAdapter extends BaseAdapter implements Filterable {
     }
 
     @Override
+    public View getDropDownView(int position, View convertView, ViewGroup parent){
+        TextView text = new TextView(context);
+
+        if(position == 0){
+            text.setHeight(0);
+            text.setVisibility(View.GONE);
+        }
+
+        else {
+            text.setText(idList.get(position).getName());
+        }
+
+        return text;
+    }
+
+    @Override
     public Filter getFilter() {
         Filter filter = new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence charSequence) {
                 FilterResults ret = new FilterResults();
+                savedQuery = charSequence;
                 List<ItemInfo> filtered;
 
 
@@ -107,5 +127,13 @@ public class KPAdapter extends BaseAdapter implements Filterable {
         };
 
         return filter;
+    }
+
+    public void update(List<ItemInfo> newList){
+        Filter filter = getFilter();
+
+        original = newList;
+
+        filter.filter(savedQuery);
     }
 }
