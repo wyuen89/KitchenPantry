@@ -1,5 +1,6 @@
 package wyuen.kitchen_pantry;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -48,6 +49,8 @@ public class RecipeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("RecipeFragment", "Add Button Pressed");
+                Intent intent = new Intent(getContext(), AddRecipeActivity.class);
+                startActivityForResult(intent, 1);
             }
         });
 
@@ -83,5 +86,12 @@ public class RecipeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("RecipeFragment", "activity returned");
+        //@TODO: call update only when result is successful
+        adapter.update(db.getAllRecipes());
     }
 }

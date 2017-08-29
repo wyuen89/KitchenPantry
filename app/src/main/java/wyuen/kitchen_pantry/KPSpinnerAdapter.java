@@ -55,15 +55,7 @@ public class KPSpinnerAdapter extends BaseAdapter {
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent){
         TextView text = new TextView(context);
-
-        if(position == 0){
-            text.setHeight(0);
-            text.setVisibility(View.GONE);
-        }
-
-        else {
-            text.setText(list.get(position));
-        }
+        text.setText(list.get(position));
 
         return text;
     }

@@ -3,10 +3,20 @@
     <string name="Home">Home</string>
     <string name="Recipe">Recipe</string>
     <string name="Ingredients">Ingredients</string>
+    <string name="Ingredient_colon">Ingredient:</string>
     <string name="Settings">Settings</string>
+    <string name="Done">Done</string>
+    <string name="Cancel">Cancel</string>
     <string name="IngredientID">IngredientID</string>
     <string name="title_activity_add_ingredient">AddIngredientActivity</string>
     <string name="Name">Name</string>
+    <string name="cook_time">Cook Time</string>
+    <string name="prep_time">Prep Time</string>
+    <string name="hint_minutes">In Minutes</string>
+    <string name="ingredients_colon">Ingredients:</string>
+    <string name="add_ingredient">Add Ingredient</string>
+    <string name="instructions">Instructions:</string>
+    <string name="add_step">Add Step</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
@@ -80,4 +90,6 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="title_activity_instruction_dialog">InstructionDialog</string>
+    <string name="title_activity_ingredient_dialog">IngredientDialog</string>
 </resources>

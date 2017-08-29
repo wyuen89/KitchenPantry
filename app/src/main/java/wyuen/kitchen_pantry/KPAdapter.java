@@ -75,15 +75,7 @@ public class KPAdapter extends BaseAdapter implements Filterable {
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent){
         TextView text = new TextView(context);
-
-        if(position == 0){
-            text.setHeight(0);
-            text.setVisibility(View.GONE);
-        }
-
-        else {
-            text.setText(idList.get(position).getName());
-        }
+        text.setText(idList.get(position).getName());
 
         return text;
     }

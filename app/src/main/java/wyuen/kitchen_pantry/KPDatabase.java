@@ -17,11 +17,20 @@ public class KPDatabase {
 
     public static final String TABLE_RECIPE = "Recipe";
     public static final String TABLE_INGREDIENTS = "Ingredients";
+    public static final String TABLE_REC_INGREDIENTS = "RecIngredients";
+    public static final String TABLE_INSTRUCTIONS = "Instructions";
 
     public static final String COLUMN_INGREDIENTID= "IngredientID";
     public static final String COLUMN_RECIPEID= "RecID";
     public static final String COLUMN_NAME = "Name";
     public static final String COLUMN_TYPE = "Type";
+    public static final String COLUMN_CUISINE = "Cuisine";
+    public static final String COLUMN_PREP_TIME = "PrepTime";
+    public static final String COLUMN_COOK_TIME = "CookTime";
+    public static final String COLUMN_QUANTITY = "Quantity";
+    public static final String COLUMN_MEASUREMENT = "Measurement";
+    public static final String COLUMN_INSTRUCTION = "Instr";
+    public static final String COLUMN_STEP = "Step";
 
     private SQLiteDatabase db;
     private Context context;
@@ -145,6 +154,42 @@ public class KPDatabase {
         return success;
     }
 
+    public boolean addRecipe(List<String> recInfo, List<Integer> idList, List<Double> quantity, List<String> units, List<String> instructions){
+        ContentValues values;
+        boolean success = true;
+        int id = getMaxRecipeID() + 1;
+
+
+
+        try{
+            db.beginTransaction();
+
+            values = fillValues(TABLE_RECIPE, recInfo, id);
+            db.insertOrThrow(TABLE_RECIPE, null, values);
+
+            for(int i = 0; i < idList.size(); i++){
+                values = fillValues(idList, quantity, units, id, i);
+                db.insertOrThrow(TABLE_REC_INGREDIENTS, null, values);
+            }
+
+            for(int i = 0; i < instructions.size(); i++){
+                values = fillValues(instructions, id, i);
+                db.insertOrThrow(TABLE_INSTRUCTIONS, null, values);
+            }
+
+            db.setTransactionSuccessful();
+
+
+        }catch(SQLException e){
+            Log.d(getClass().getName(), e.getMessage());
+            success = false;
+        }finally{
+            db.endTransaction();
+        }
+
+        return success;
+    }
+
     public int getMaxIngredientID(){
         return getMaxID(TABLE_INGREDIENTS, COLUMN_INGREDIENTID);
     }
@@ -165,10 +210,6 @@ public class KPDatabase {
 
         cursor.moveToNext();
         return cursor.getInt(0);
-    }
-
-    private void setSelectionString(String str){
-        str = new String("hello");
     }
 
     private List<ItemInfo> convertToItemInfo(Cursor cursor){
@@ -192,5 +233,50 @@ public class KPDatabase {
             }
         }
         return ret;
+    }
+
+    //used to fill content values for recipe info
+    private ContentValues fillValues(String table, List<String> recInfo, Integer id){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, id);
+        values.put(COLUMN_NAME, recInfo.get(0));
+        values.put(COLUMN_CUISINE, recInfo.get(1));
+
+        if(!recInfo.get(2).equals("")) {
+            values.put(COLUMN_PREP_TIME, Integer.parseInt(recInfo.get(2)));
+        }
+
+        if(!recInfo.get(3).equals("")) {
+            values.put(COLUMN_COOK_TIME, Integer.parseInt(recInfo.get(3)));
+        }
+
+        return values;
+    }
+
+    //used to fill content values for recipe ingredients
+    private ContentValues fillValues(List<Integer> idList, List<Double> quantity, List<String> unit, Integer recID,  Integer index){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, recID);
+        values.put(COLUMN_INGREDIENTID, idList.get(index));
+
+        if(quantity.get(index) > 0.0){
+            values.put(COLUMN_QUANTITY, quantity.get(index));
+            values.put(COLUMN_MEASUREMENT, unit.get(index));
+        }
+
+        return values;
+    }
+
+    //used to fill content values for instructions
+    private ContentValues fillValues(List<String> instructions, Integer recID, Integer stepNum){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, recID);
+        values.put(COLUMN_STEP, stepNum + 1);
+        values.put(COLUMN_INSTRUCTION, instructions.get(stepNum));
+
+        return values;
     }
 }
