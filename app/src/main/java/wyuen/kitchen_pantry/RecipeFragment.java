@@ -1,13 +1,11 @@
 package wyuen.kitchen_pantry;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -29,14 +27,13 @@ public class RecipeFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d("RecipeFragment", "onCreate called");
 
-        db = new KPDatabase(DbHelper.getInstance(this.getContext()).getWritableDatabase());
-        adapter = new KPAdapter(this.getContext(), db.selectAllRecipes());
-        //setHasOptionsMenu(true);
+        db = new KPDatabase(getActivity().getBaseContext(), DbHelper.getInstance(this.getContext()).getWritableDatabase());
+        adapter = new KPAdapter(this.getContext(), db.getAllRecipes());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        Log.d("IngredientFragment", "OnCreateView called");
+        Log.d("RecipeFragment", "OnCreateView called");
 
         View view = inflater.inflate(R.layout.recipe_fragment, container, false);
         Toolbar tb = (Toolbar)view.findViewById(R.id.recipe_toolbar);
@@ -52,6 +49,8 @@ public class RecipeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("RecipeFragment", "Add Button Pressed");
+                Intent intent = new Intent(getContext(), AddRecipeActivity.class);
+                startActivityForResult(intent, 1);
             }
         });
 
@@ -87,5 +86,12 @@ public class RecipeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("RecipeFragment", "activity returned");
+        //@TODO: call update only when result is successful
+        adapter.update(db.getAllRecipes());
     }
 }

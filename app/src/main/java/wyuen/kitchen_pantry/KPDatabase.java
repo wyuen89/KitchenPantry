@@ -1,55 +1,218 @@
 package wyuen.kitchen_pantry;
 
+import android.content.ClipData;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class KPDatabase {
 
+    public static final String TABLE_RECIPE = "Recipe";
+    public static final String TABLE_INGREDIENTS = "Ingredients";
+    public static final String TABLE_REC_INGREDIENTS = "RecIngredients";
+    public static final String TABLE_INSTRUCTIONS = "Instructions";
+
+    public static final String COLUMN_INGREDIENTID= "IngredientID";
+    public static final String COLUMN_RECIPEID= "RecID";
+    public static final String COLUMN_NAME = "Name";
+    public static final String COLUMN_TYPE = "Type";
+    public static final String COLUMN_CUISINE = "Cuisine";
+    public static final String COLUMN_PREP_TIME = "PrepTime";
+    public static final String COLUMN_COOK_TIME = "CookTime";
+    public static final String COLUMN_QUANTITY = "Quantity";
+    public static final String COLUMN_MEASUREMENT = "Measurement";
+    public static final String COLUMN_INSTRUCTION = "Instr";
+    public static final String COLUMN_STEP = "Step";
+
     private SQLiteDatabase db;
+    private Context context;
 
-    public KPDatabase(SQLiteDatabase db){
+    public KPDatabase(Context context, SQLiteDatabase db){
         this.db = db;
+        this.context = context.getApplicationContext();
+        Log.d("KPDatabase", "count updated to " + Integer.toString(getMaxIngredientID()));
     }
 
-    public List<ItemInfo> selectAllIngredients(){
+    public List<ItemInfo> getAllIngredients(){
         List<ItemInfo> ret;
         Cursor results;
 
-        String[] columns = {DbHelper.COLUMN_INGREDIENTID, DbHelper.COLUMN_NAME};
+        String[] columns = {COLUMN_INGREDIENTID, COLUMN_NAME};
 
-        results = db.query(DbHelper.TABLE_INGREDIENTS, columns, null, null, null, null, "Name");
+        results = db.query(TABLE_INGREDIENTS, columns, null, null, null, null, COLUMN_NAME);
 
         Log.d("KPDatabase", Integer.toString(results.getCount()) + " rows in Cursor");
 
-        ret = convert(results);
+        ret = convertToItemInfo(results);
 
         results.close();
 
         return ret;
     }
 
-    public List<ItemInfo> selectAllRecipes(){
+    public List<ItemInfo> getFilteredIngredients(){
         List<ItemInfo> ret;
         Cursor results;
+        String select = null;
+        String[] args = null;
+        StringBuilder str = new StringBuilder();
 
-        String[] columns = {DbHelper.COLUMN_RECIPEID, DbHelper.COLUMN_NAME};
+        SharedPreferences shared = context.getSharedPreferences("ingredient_filter", Context.MODE_PRIVATE);
 
-        results = db.query(DbHelper.TABLE_RECIPE, columns, null, null, null, null, "Name");
+        String[] columns = {COLUMN_INGREDIENTID, COLUMN_NAME};
+
+        Object[] keys = shared.getAll().keySet().toArray();
+
+        if(keys.length > 0) {
+            args = new String[keys.length];
+
+            for (int i = 0; i < keys.length; i++) {
+                if (i < 0) {
+                    str.append(" AND ");
+                }
+
+                str.append((String) keys[i] + " = ?");
+                args[i] = shared.getString((String) keys[i], null);
+            }
+
+            select = str.toString();
+        }
+
+        Log.d("KPDatabase", str.toString());
+
+        results = db.query(TABLE_INGREDIENTS, columns, select, args, null, null, COLUMN_NAME);
 
         Log.d("KPDatabase", Integer.toString(results.getCount()) + " rows in Cursor");
 
-        ret = convert(results);
+        ret = convertToItemInfo(results);
 
         results.close();
 
         return ret;
     }
 
-    private List<ItemInfo> convert(Cursor cursor){
+    public List<ItemInfo> getAllRecipes(){
+        List<ItemInfo> ret;
+        Cursor results;
+
+        String[] columns = {COLUMN_RECIPEID, COLUMN_NAME};
+
+        results = db.query(TABLE_RECIPE, columns, null, null, null, null, COLUMN_NAME);
+
+        Log.d("KPDatabase", Integer.toString(results.getCount()) + " rows in Cursor");
+
+        ret = convertToItemInfo(results);
+
+        results.close();
+
+        return ret;
+    }
+
+    public List<String> getTypes(){
+        List<String> ret;
+        Cursor results;
+
+        String[] columns = {COLUMN_TYPE};
+
+        results = db.query(true, TABLE_INGREDIENTS, columns, null, null, null, null, COLUMN_TYPE, null);
+
+        Log.d("KPDatabase", Integer.toString(results.getCount()) + " rows in Cursor");
+
+        ret = convertToString(results);
+
+        results.close();
+
+        return ret;
+    }
+
+    public boolean addIngredient(int id, String name, String type) {
+        boolean success = true;
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_INGREDIENTID, id);
+        values.put(COLUMN_NAME, name);
+        values.put(COLUMN_TYPE, type);
+
+        try {
+            db.beginTransaction();
+            db.insertOrThrow(TABLE_INGREDIENTS, null, values);
+            db.setTransactionSuccessful();
+        }catch(SQLException e){
+            Log.d("KPDatabase", e.getMessage());
+            success = false;
+        }finally{
+            db.endTransaction();
+        }
+
+        return success;
+    }
+
+    public boolean addRecipe(List<String> recInfo, List<Integer> idList, List<Double> quantity, List<String> units, List<String> instructions){
+        ContentValues values;
+        boolean success = true;
+        int id = getMaxRecipeID() + 1;
+
+
+
+        try{
+            db.beginTransaction();
+
+            values = fillValues(TABLE_RECIPE, recInfo, id);
+            db.insertOrThrow(TABLE_RECIPE, null, values);
+
+            for(int i = 0; i < idList.size(); i++){
+                values = fillValues(idList, quantity, units, id, i);
+                db.insertOrThrow(TABLE_REC_INGREDIENTS, null, values);
+            }
+
+            for(int i = 0; i < instructions.size(); i++){
+                values = fillValues(instructions, id, i);
+                db.insertOrThrow(TABLE_INSTRUCTIONS, null, values);
+            }
+
+            db.setTransactionSuccessful();
+
+
+        }catch(SQLException e){
+            Log.d(getClass().getName(), e.getMessage());
+            success = false;
+        }finally{
+            db.endTransaction();
+        }
+
+        return success;
+    }
+
+    public int getMaxIngredientID(){
+        return getMaxID(TABLE_INGREDIENTS, COLUMN_INGREDIENTID);
+    }
+
+    public int getMaxRecipeID(){
+        return getMaxID(TABLE_RECIPE, COLUMN_RECIPEID);
+    }
+
+    private int getMaxID(String table, String column){
+        Cursor cursor;
+        StringBuilder max= new StringBuilder();
+
+        max.append("MAX(").append(column).append(")");
+
+        String[] columns = {max.toString()};
+
+        cursor = db.query(false, table, columns, null, null, null, null, null, null);
+
+        cursor.moveToNext();
+        return cursor.getInt(0);
+    }
+
+    private List<ItemInfo> convertToItemInfo(Cursor cursor){
 
         List<ItemInfo> ret = new ArrayList<ItemInfo>();
 
@@ -57,5 +220,63 @@ public class KPDatabase {
             ret.add(new ItemInfo(cursor.getInt(0), cursor.getString(1)));
         }
         return ret;
+    }
+
+    private List<String> convertToString(Cursor cursor){
+        List<String> ret = new ArrayList<String>();
+
+        while(cursor.moveToNext()){
+            String string = cursor.getString(0);
+
+            if(string != null){
+                ret.add(string);
+            }
+        }
+        return ret;
+    }
+
+    //used to fill content values for recipe info
+    private ContentValues fillValues(String table, List<String> recInfo, Integer id){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, id);
+        values.put(COLUMN_NAME, recInfo.get(0));
+        values.put(COLUMN_CUISINE, recInfo.get(1));
+
+        if(!recInfo.get(2).equals("")) {
+            values.put(COLUMN_PREP_TIME, Integer.parseInt(recInfo.get(2)));
+        }
+
+        if(!recInfo.get(3).equals("")) {
+            values.put(COLUMN_COOK_TIME, Integer.parseInt(recInfo.get(3)));
+        }
+
+        return values;
+    }
+
+    //used to fill content values for recipe ingredients
+    private ContentValues fillValues(List<Integer> idList, List<Double> quantity, List<String> unit, Integer recID,  Integer index){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, recID);
+        values.put(COLUMN_INGREDIENTID, idList.get(index));
+
+        if(quantity.get(index) > 0.0){
+            values.put(COLUMN_QUANTITY, quantity.get(index));
+            values.put(COLUMN_MEASUREMENT, unit.get(index));
+        }
+
+        return values;
+    }
+
+    //used to fill content values for instructions
+    private ContentValues fillValues(List<String> instructions, Integer recID, Integer stepNum){
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_RECIPEID, recID);
+        values.put(COLUMN_STEP, stepNum + 1);
+        values.put(COLUMN_INSTRUCTION, instructions.get(stepNum));
+
+        return values;
     }
 }
