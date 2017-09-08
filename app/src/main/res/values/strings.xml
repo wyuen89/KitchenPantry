@@ -92,4 +92,5 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_instruction_dialog">InstructionDialog</string>
     <string name="title_activity_ingredient_dialog">IngredientDialog</string>
+    <string name="title_activity_filter_recipe">FilterRecipeActivity</string>
 </resources>

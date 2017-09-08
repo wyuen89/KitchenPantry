@@ -58,6 +58,8 @@ public class RecipeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("RecipeFragment", "Filter Button Pressed");
+                Intent intent = new Intent(getContext(), FilterRecipeActivity.class);
+                startActivityForResult(intent, 2);
             }
         });
 
