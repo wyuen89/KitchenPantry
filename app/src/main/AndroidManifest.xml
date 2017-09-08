@@ -18,6 +18,10 @@
         <activity android:name=".AddIngredientActivity" />
         <activity android:name=".FilterIngredientActivity" />
         <activity android:name=".AddRecipeActivity" />
+        <activity
+            android:name=".IngredientDisplayActivity"
+            android:label="@string/title_activity_ingredient_display"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

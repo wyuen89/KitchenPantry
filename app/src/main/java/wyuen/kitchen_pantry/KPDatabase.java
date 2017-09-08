@@ -10,7 +10,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class KPDatabase {
@@ -95,6 +97,26 @@ public class KPDatabase {
         ret = convertToItemInfo(results);
 
         results.close();
+
+        return ret;
+    }
+
+    public Map<String, List<String>> getIngredientById(long id){
+        Map<String, List<String>> ret;
+        Cursor results;
+
+        String[] columns = {COLUMN_NAME, COLUMN_TYPE};
+        String select = "IngredientID = ?";
+        String[] args = {Long.toString(id)};
+
+        results = db.query(TABLE_INGREDIENTS, columns, select, args, null, null, null);
+        ret =  convertToMap(results);
+
+        results.close();
+
+        for(String string : ret.keySet()){
+            Log.d("KPDatabase", string);
+        }
 
         return ret;
     }
@@ -232,6 +254,44 @@ public class KPDatabase {
                 ret.add(string);
             }
         }
+        return ret;
+    }
+
+    public Map<String, List<String>> convertToMap(Cursor cursor){
+        Map<String, List<String>> ret = new HashMap<String, List<String>>();
+        String[] columns = cursor.getColumnNames();
+        List<List<String>> temp = new ArrayList<List<String>>();
+
+        for(int i = 0; i<columns.length; i++){
+            temp.add(new ArrayList<String>());
+        }
+
+        while(cursor.moveToNext()){
+            for(int i = 0; i<cursor.getColumnCount(); i++){
+                int type = cursor.getType(i);
+
+                if(type == Cursor.FIELD_TYPE_NULL){
+                    temp.get(i).add("");
+                }
+
+                else if(type == Cursor.FIELD_TYPE_INTEGER){
+                    temp.get(i).add(Integer.toString(cursor.getInt(i)));
+                }
+
+                else if(type == Cursor.FIELD_TYPE_FLOAT){
+                    temp.get(i).add(Double.toString(cursor.getFloat(i)));
+                }
+
+                else{
+                    temp.get(i).add(cursor.getString(i));
+                }
+            }
+        }
+
+        for(int i = 0; i<columns.length; i++){
+            ret.put(columns[i], temp.get(i));
+        }
+
         return ret;
     }
 

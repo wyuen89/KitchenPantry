@@ -73,6 +73,9 @@ public class IngredientFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //TODO: make so clicking position will open respective item page
                 Log.d("IngredientFragment", "Position: " + i + " ID: " + adapter.getItemId(i));
+                Intent intent = new Intent(getContext(), IngredientDisplayActivity.class);
+                intent.putExtra("id", adapter.getItemId(i));
+                startActivity(intent);
             }
         });
 
