@@ -21,6 +21,10 @@
         <activity
             android:name=".IngredientDisplayActivity"
             android:label="@string/title_activity_ingredient_display"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".RecipeDisplayActivity"
+            android:label="@string/title_activity_recipe_display"
             android:theme="@style/AppTheme"></activity>
     </application>
 

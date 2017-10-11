@@ -68,6 +68,10 @@ public class RecipeFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //TODO: make so clicking position will open respective item page
                 Log.d("RecipeFragment", "Position: " + i + " ID: " + adapter.getItemId(i));
+                Intent intent = new Intent(getContext(), RecipeDisplayActivity.class);
+                intent.putExtra(db.COLUMN_RECIPEID, adapter.getItemId(i));
+
+                startActivity(intent);
             }
         });
 

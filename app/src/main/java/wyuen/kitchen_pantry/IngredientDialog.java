@@ -1,5 +1,6 @@
 package wyuen.kitchen_pantry;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -35,6 +36,19 @@ public class IngredientDialog extends DialogFragment {
     @Override
     public void onAttach(Context context){
         super.onAttach(context);
+
+        try{
+            this.listener = (IngredientDialog.OnCompleteListener)getActivity();
+        }
+        catch(final ClassCastException e){
+            throw new ClassCastException(getActivity().toString() + " must implement OnCompleteListener");
+        }
+    }
+
+    @SuppressWarnings("depracation")
+    @Override
+    public void onAttach(Activity activity){
+        super.onAttach(activity);
 
         try{
             this.listener = (IngredientDialog.OnCompleteListener)getActivity();

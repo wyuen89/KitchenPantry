@@ -121,6 +121,48 @@ public class KPDatabase {
         return ret;
     }
 
+    public Map<String, List<String>> getRecipeById(long id){
+        Map<String, List<String>> ret;
+        String recId = Long.toString(id);
+        Cursor recResults;
+        Cursor ingredientResults;
+        Cursor stepResults;
+
+        String[] recColumns = {COLUMN_NAME, COLUMN_CUISINE};
+        String recSelect = COLUMN_RECIPEID + " = ?";
+        String[] recArgs = {recId};
+
+        recResults = db.query(TABLE_RECIPE, recColumns, recSelect, recArgs, null, null, null);
+        ret = convertToMap(recResults);
+
+        recResults.close();
+
+        String[] stepColumns = {COLUMN_STEP, COLUMN_INSTRUCTION};
+        String stepSelect = COLUMN_RECIPEID + " = ?";
+        String[] stepArgs = {recId};
+
+        stepResults = db.query(TABLE_INSTRUCTIONS, stepColumns, stepSelect, stepArgs, null, null, COLUMN_STEP);
+        ret.putAll(convertToMap(stepResults));
+
+        String dropQuery = "DROP TABLE IF EXISTS tempTable;";
+        db.execSQL(dropQuery);
+
+        String viewQuery = "CREATE TEMPORARY TABLE tempTable AS SELECT IngredientID, Quantity, Measurement FROM RecIngredients WHERE RecID = ?;";
+        String[] viewArgs = {recId};
+        db.execSQL(viewQuery, viewArgs);
+
+        String ingredientQuery = "SELECT t1.*, Ingredients.Name AS IngredientName FROM tempTable t1 INNER JOIN Ingredients on Ingredients.IngredientID = t1.IngredientID;";
+        ingredientResults = db.rawQuery(ingredientQuery, null);
+
+        ret.putAll(convertToMap(ingredientResults));
+
+        for(String string : ret.keySet()){
+            Log.d("KPDatabase", string);
+        }
+
+        return ret;
+    }
+
     public List<ItemInfo> getAllRecipes(){
         List<ItemInfo> ret;
         Cursor results;
