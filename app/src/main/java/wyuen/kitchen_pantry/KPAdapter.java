@@ -52,7 +52,17 @@ public class KPAdapter extends BaseAdapter implements Filterable {
         return idList.get(i).getId();
     }
 
-    @Override
+    public int getPosition(int id) {
+        for (int i = 0; i < original.size(); i++) {
+            if (original.get(i).getId() == id) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+        @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         ViewHolder holder;
 

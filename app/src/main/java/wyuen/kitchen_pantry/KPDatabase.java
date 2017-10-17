@@ -34,6 +34,9 @@ public class KPDatabase {
     public static final String COLUMN_INSTRUCTION = "Instr";
     public static final String COLUMN_STEP = "Step";
 
+    public static final String TOTAL_TIME = "Total Time";
+    public static final String INGREDIENT_LIST ="Ingredient List";
+
     private SQLiteDatabase db;
     private Context context;
 
@@ -60,7 +63,20 @@ public class KPDatabase {
         return ret;
     }
 
-    public List<ItemInfo> getFilteredIngredients(){
+    public List<String> getAllCuisine() {
+        List<String> ret;
+        Cursor results;
+
+        String[] columns = {COLUMN_CUISINE};
+
+        results = db.query(true, TABLE_RECIPE, columns, null, null, null, null, COLUMN_CUISINE, null);
+
+        ret = convertToString(results);
+
+        return ret;
+    }
+
+        public List<ItemInfo> getFilteredIngredients(){
         List<ItemInfo> ret;
         Cursor results;
         String select = null;
@@ -260,6 +276,20 @@ public class KPDatabase {
 
     public int getMaxRecipeID(){
         return getMaxID(TABLE_RECIPE, COLUMN_RECIPEID);
+    }
+
+    public int getMaxTime() {
+        Cursor cursor;
+        StringBuilder max = new StringBuilder();
+
+        max.append("MAX(").append(COLUMN_COOK_TIME).append(" + ").append(COLUMN_PREP_TIME).append(")");
+
+        String[] columns = {max.toString()};
+
+        cursor = db.query(false, TABLE_RECIPE, columns, null, null, null, null, null, null);
+
+        cursor.moveToNext();
+        return cursor.getInt(0);
     }
 
     private int getMaxID(String table, String column){

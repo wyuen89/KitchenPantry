@@ -25,6 +25,10 @@
         <activity
             android:name=".RecipeDisplayActivity"
             android:label="@string/title_activity_recipe_display"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".FilterRecipeActivity"
+            android:label="@string/title_activity_filter_recipe"
             android:theme="@style/AppTheme"></activity>
     </application>
 

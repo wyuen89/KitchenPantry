@@ -94,4 +94,5 @@
     <string name="title_activity_ingredient_dialog">IngredientDialog</string>
     <string name="title_activity_ingredient_display">IngredientDisplayActivity</string>
     <string name="title_activity_recipe_display">RecipeDisplayActivity</string>
+    <string name="title_activity_filter_recipe">FilterRecipeActivity</string>
 </resources>
