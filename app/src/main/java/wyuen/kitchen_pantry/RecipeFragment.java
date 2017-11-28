@@ -15,6 +15,9 @@ import android.widget.SearchView;
 
 public class RecipeFragment extends Fragment {
 
+    final Integer ADD_ACTIVITY = 1;
+    final Integer FILTER_ACTIVITY = 2;
+
     private KPDatabase db;
     private KPAdapter adapter;
 
@@ -28,7 +31,7 @@ public class RecipeFragment extends Fragment {
         Log.d("RecipeFragment", "onCreate called");
 
         db = new KPDatabase(getActivity().getBaseContext(), DbHelper.getInstance(this.getContext()).getWritableDatabase());
-        adapter = new KPAdapter(this.getContext(), db.getAllRecipes());
+        adapter = new KPAdapter(this.getContext(), db.getFilteredRecipes());
     }
 
     @Override
@@ -50,7 +53,7 @@ public class RecipeFragment extends Fragment {
             public void onClick(View view) {
                 Log.d("RecipeFragment", "Add Button Pressed");
                 Intent intent = new Intent(getContext(), AddRecipeActivity.class);
-                startActivityForResult(intent, 1);
+                startActivityForResult(intent, ADD_ACTIVITY);
             }
         });
 
@@ -58,6 +61,8 @@ public class RecipeFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.d("RecipeFragment", "Filter Button Pressed");
+                Intent intent = new Intent(getContext(), FilterRecipeActivity.class);
+                startActivityForResult(intent, FILTER_ACTIVITY);
             }
         });
 
@@ -96,6 +101,6 @@ public class RecipeFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("RecipeFragment", "activity returned");
         //@TODO: call update only when result is successful
-        adapter.update(db.getAllRecipes());
+        adapter.update(db.getFilteredRecipes());
     }
 }

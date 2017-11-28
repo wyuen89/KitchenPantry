@@ -76,7 +76,7 @@ public class KPDatabase {
         return ret;
     }
 
-        public List<ItemInfo> getFilteredIngredients(){
+    public List<ItemInfo> getFilteredIngredients(){
         List<ItemInfo> ret;
         Cursor results;
         String select = null;
@@ -112,6 +112,107 @@ public class KPDatabase {
 
         ret = convertToItemInfo(results);
 
+        results.close();
+
+        return ret;
+    }
+
+    public List<ItemInfo> getFilteredRecipes(){
+        List<ItemInfo> ret;
+        Cursor results;
+        SharedPreferences shared = context.getSharedPreferences("recipe_filter", Context.MODE_PRIVATE);
+        StringBuilder recTable = new StringBuilder();
+        StringBuilder ingrTable = new StringBuilder();
+        StringBuilder recWhere = new StringBuilder();
+        StringBuilder ingrWhere = new StringBuilder();
+        String dropRec = "DROP TABLE IF EXISTS tempRec;";
+        String dropIngr = "DROP TABLE IF EXISTS tempIngr;";
+        String joinQuery = "SELECT tempRec.* FROM tempRec INNER JOIN tempIngr ON tempRec.RecID = tempIngr.RecID;";
+
+        recTable.append("CREATE TEMPORARY TABLE tempRec AS SELECT ");
+        recTable.append(COLUMN_RECIPEID);
+        recTable.append(", ");
+        recTable.append(COLUMN_NAME);
+        recTable.append(", ");
+        recTable.append(COLUMN_PREP_TIME + " + " + COLUMN_COOK_TIME + " AS total");
+        recTable.append(" FROM ");
+        recTable.append(TABLE_RECIPE);
+
+        ingrTable.append("CREATE TEMPORARY TABLE tempIngr AS SELECT DISTINCT ");
+        ingrTable.append(COLUMN_RECIPEID);
+        ingrTable.append(" FROM ");
+        ingrTable.append(TABLE_REC_INGREDIENTS);
+
+        Object[] keys = shared.getAll().keySet().toArray();
+
+        Log.d("DATABASE", Integer.toString(recWhere.length()));
+
+        for (int i = 0; i < keys.length; i++) {
+            String val = (String) keys[i];
+
+            if(val.equals(COLUMN_CUISINE) || val.equals(TOTAL_TIME)){
+                if(recWhere.length() > 0){
+                    recWhere.append(" AND ");
+                }
+
+                if(val.equals(COLUMN_CUISINE)){
+                    recWhere.append(COLUMN_CUISINE + " = \'" + shared.getString(val, null) + "\'");
+                }
+
+                else if(val.equals(TOTAL_TIME)){
+                    recWhere.append("total <= " + shared.getString(val,null));
+                }
+            }
+
+            else if(val.equals(COLUMN_INGREDIENTID) || val.equals(INGREDIENT_LIST)){
+                if(ingrWhere.length() > 0){
+                    ingrWhere.append(" AND ");
+                }
+
+                if(val.equals(COLUMN_INGREDIENTID)){
+                    ingrWhere.append(COLUMN_INGREDIENTID + " = " + shared.getString(val, null));
+                }
+
+                else if(val.equals(INGREDIENT_LIST)){
+                    ingrWhere.append(COLUMN_RECIPEID + " NOT IN (SELECT DISTINCT " + COLUMN_RECIPEID + " FROM " + TABLE_REC_INGREDIENTS + " WHERE " + COLUMN_INGREDIENTID + " NOT IN (" + shared.getString(val, null) + "))");
+                }
+            }
+        }
+
+        recWhere.append(";");
+        ingrWhere.append(";");
+
+        String recWhereStr = recWhere.toString();
+        String ingrWhereStr = ingrWhere.toString();
+
+        if(!recWhereStr.equals(";")){
+            recTable.append(" WHERE ");
+        }
+
+        if(!ingrWhereStr.toString().equals(";")){
+            ingrTable.append(" WHERE ");
+        }
+
+        recTable.append(recWhereStr);
+        ingrTable.append(ingrWhereStr);
+
+        Log.d("Database", recTable.toString());
+        Log.d("Database", ingrTable.toString());
+        Log.d("Database", joinQuery);
+
+        db.execSQL(dropRec);
+        db.execSQL(dropIngr);
+        db.execSQL(recTable.toString());
+        db.execSQL(ingrTable.toString());
+
+        results = db.rawQuery(joinQuery, null);
+
+        Log.d("KPDatabase", Integer.toString(results.getCount()) + " rows in Cursor");
+
+        ret = convertToItemInfo(results);
+
+        db.execSQL(dropRec);
+        db.execSQL(dropIngr);
         results.close();
 
         return ret;
@@ -175,6 +276,8 @@ public class KPDatabase {
         for(String string : ret.keySet()){
             Log.d("KPDatabase", string);
         }
+
+        db.execSQL(dropQuery);
 
         return ret;
     }
